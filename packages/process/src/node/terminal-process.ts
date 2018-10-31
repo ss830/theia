@@ -18,7 +18,7 @@ import { injectable, inject, named } from 'inversify';
 import { ILogger } from '@theia/core/lib/common';
 import { Process, ProcessType, ProcessOptions } from './process';
 import { ProcessManager } from './process-manager';
-import { IPty, spawn } from 'node-pty';
+import { IPty, spawn } from '@theia/node-pty';
 import { MultiRingBuffer, MultiRingBufferReadableStream } from './multi-ring-buffer';
 import { signame } from './utils';
 
@@ -50,6 +50,14 @@ export class TerminalProcess extends Process {
             options.command,
             options.args || [],
             options.options || {});
+
+        this.terminal.on('exec', (reason: string | undefined) => {
+            if (reason === undefined) {
+                this.emitOnStarted();
+            } else {
+                this.emitOnError({ code: reason });
+            }
+        });
 
         this.terminal.on('exit', (code: number, signal?: number) => {
             // Make sure to only pass either code or signal as !undefined, not
