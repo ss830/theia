@@ -1,8 +1,9 @@
 # Change Log
 
 ## v0.3.19
-- [cpp] added new `cpp.clangdExecutable` and `cpp.clangdArgs` to customize language server start command.
-- [monaco] Fix document-saving that was taking too long.
+- [cpp] added new `cpp.clangdExecutable` and `cpp.clangdArgs` to customize language server start command
+- [electron] open markdown links in the OS default browser
+- [monaco] Fix document-saving that was taking too long
 
 ## v0.3.18
 - [core] added a preference to define how to handle application exit
