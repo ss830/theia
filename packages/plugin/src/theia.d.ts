@@ -6164,6 +6164,10 @@ declare module '@theia/plugin' {
      */
     export class Breakpoint {
         /**
+         * The unique ID of the breakpoint.
+         */
+        readonly id: string;
+        /**
          * Is breakpoint enabled.
          */
         readonly enabled: boolean;
