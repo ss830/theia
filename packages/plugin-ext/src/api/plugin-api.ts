@@ -931,6 +931,7 @@ export interface TasksExt {
     $provideTasks(handle: number): Promise<TaskDto[] | undefined>;
     $resolveTask(handle: number, task: TaskDto): Promise<TaskDto | undefined>;
     $onDidStartTask(execution: TaskExecutionDto): void;
+    $onDidEndTask(id: number): void;
 }
 
 export interface TasksMain {
