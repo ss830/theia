@@ -612,22 +612,22 @@ declare module '@theia/plugin' {
         provideDefinition(document: TextDocument, position: Position, token: CancellationToken | undefined): ProviderResult<Definition | DefinitionLink[]>;
     }
 
-	/**
-	 * The implementation provider interface defines the contract between extensions and
-	 * the go to implementation feature.
-	 */
-	export interface ImplementationProvider {
+    /**
+     * The implementation provider interface defines the contract between extensions and
+     * the go to implementation feature.
+     */
+    export interface ImplementationProvider {
 
-		/**
-		 * Provide the implementations of the symbol at the given position and document.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param position The position at which the command was invoked.
-		 * @param token A cancellation token.
-		 * @return A definition or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideImplementation(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
+        /**
+         * Provide the implementations of the symbol at the given position and document.
+         *
+         * @param document The document in which the command was invoked.
+         * @param position The position at which the command was invoked.
+         * @param token A cancellation token.
+         * @return A definition or a thenable that resolves to such. The lack of a result can be
+         * signaled by returning `undefined` or `null`.
+         */
+        provideImplementation(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
     }
 
     /**
@@ -5599,18 +5599,18 @@ declare module '@theia/plugin' {
          */
         export function registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
 
-		/**
-		 * Register an implementation provider.
-		 *
-		 * Multiple providers can be registered for a language. In that case providers are asked in
-		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
-		 * not cause a failure of the whole operation.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider An implementation provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable;
+        /**
+         * Register an implementation provider.
+         *
+         * Multiple providers can be registered for a language. In that case providers are asked in
+         * parallel and the results are merged. A failing provider (rejected promise or exception) will
+         * not cause a failure of the whole operation.
+         *
+         * @param selector A selector that defines the documents this provider is applicable to.
+         * @param provider An implementation provider.
+         * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+         */
+        export function registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable;
 
         /**
          * Register a hover provider.
@@ -6289,6 +6289,36 @@ declare module '@theia/plugin' {
         resolveTask(task: Task, token?: CancellationToken): ProviderResult<Task>;
     }
 
+    /**
+     * An object representing an executed Task. It can be used
+     * to terminate a task.
+     *
+     * This interface is not intended to be implemented.
+     */
+    export interface TaskExecution {
+        /**
+         * The task that got started.
+         */
+        task: Task;
+
+        /**
+         * Terminates the task execution.
+         */
+        terminate(): void;
+    }
+
+    /**
+     * An event signaling the start of a task execution.
+     *
+     * This interface is not intended to be implemented.
+     */
+    interface TaskStartEvent {
+        /**
+         * The task item representing the task that got started.
+         */
+        execution: TaskExecution;
+    }
+
     export namespace tasks {
 
         /**
@@ -6299,5 +6329,8 @@ declare module '@theia/plugin' {
          * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
          */
         export function registerTaskProvider(type: string, provider: TaskProvider): Disposable;
+
+        /** Fires when a task starts. */
+        export const onDidStartTask: Event<TaskStartEvent>;
     }
 }
