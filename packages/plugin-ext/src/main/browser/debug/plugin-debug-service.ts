@@ -57,13 +57,14 @@ export class PluginDebugService implements DebugService, PluginDebugAdapterContr
     @postConstruct()
     protected init(): void {
         this.delegated = this.connectionProvider.createProxy<DebugService>(DebugPath);
-        this.toDispose.push(Disposable.create(() => this.delegated.dispose()));
-        this.toDispose.push(Disposable.create(() => {
-            for (const sessionId of this.sessionId2contrib.keys()) {
-                const contrib = this.sessionId2contrib.get(sessionId)!;
-                contrib.terminateDebugSession(sessionId);
-            }
-        }));
+        this.toDispose.pushAll([
+            Disposable.create(() => this.delegated.dispose()),
+            Disposable.create(() => {
+                for (const sessionId of this.sessionId2contrib.keys()) {
+                    const contrib = this.sessionId2contrib.get(sessionId)!;
+                    contrib.terminateDebugSession(sessionId);
+                }
+            })]);
     }
 
     registerDebugAdapterContribution(contrib: PluginDebugAdapterContribution): Disposable {
