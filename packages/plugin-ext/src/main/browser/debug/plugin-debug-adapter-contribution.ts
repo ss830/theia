@@ -54,7 +54,7 @@ export class PluginDebugAdapterContribution implements DebugAdapterContribution 
     }
 
     async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined> {
-        return this.debugExt.$resolveDebugConfigurations(this.type, config, workspaceFolderUri);
+        return this.debugExt.$resolveDebugConfigurations(config, workspaceFolderUri);
     }
 
     async createDebugSession(config: DebugConfiguration): Promise<string> {

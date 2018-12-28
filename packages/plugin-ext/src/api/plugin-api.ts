@@ -919,8 +919,8 @@ export interface DebugExt {
     $sessionDidCreate(sessionId: string): void;
     $sessionDidDestroy(sessionId: string): void;
     $sessionDidChange(sessionId: string | undefined): void;
-    $provideDebugConfigurations(debugType: string, folder: string | undefined): Promise<theia.DebugConfiguration[]>;
-    $resolveDebugConfigurations(debugType: string, debugConfiguration: theia.DebugConfiguration, folder: string | undefined): Promise<theia.DebugConfiguration | undefined>;
+    $provideDebugConfigurations(debugType: string, workspaceFolder: string | undefined): Promise<theia.DebugConfiguration[]>;
+    $resolveDebugConfigurations(debugConfiguration: theia.DebugConfiguration, workspaceFolder: string | undefined): Promise<theia.DebugConfiguration | undefined>;
     $getSupportedLanguages(debugType: string): Promise<string[]>;
     $getSchemaAttributes(debugType: string): Promise<IJSONSchema[]>;
     $getConfigurationSnippets(debugType: string): Promise<IJSONSchemaSnippet[]>;

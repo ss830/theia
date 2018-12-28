@@ -29,12 +29,12 @@ import { CommandRegistryImpl } from '../../command-registry';
 import { DebuggerContribution } from '../../../common';
 import { PluginWebSocketChannel } from '../../../common/connection';
 import { DebugAdapterExecutable } from '@theia/debug/lib/common/debug-model';
-import URI from 'vscode-uri';
-import { Path } from '@theia/core/lib/common/path';
 import { IJSONSchema, IJSONSchemaSnippet } from '@theia/core/lib/common/json-schema';
 import { PluginDebugAdapterSession } from './plugin-debug-adapter-session';
 import { startDebugAdapter } from './plugin-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './plugin-debug-adapter-executable-resolver';
+import URI from 'vscode-uri';
+import { Path } from '@theia/core/lib/common/path';
 
 // tslint:disable:no-any
 
@@ -46,7 +46,7 @@ export class DebugExtImpl implements DebugExt {
     private sessions = new Map<string, PluginDebugAdapterSession>();
 
     // providers by type
-    private configurationProviders = new Map<string, theia.DebugConfigurationProvider>();
+    private configurationProviders = new Map<string, Set<theia.DebugConfigurationProvider>>();
     private debuggersContributions = new Map<string, DebuggerContribution>();
 
     private connectionExt: ConnectionExtImpl;
@@ -130,8 +130,20 @@ export class DebugExtImpl implements DebugExt {
     }
 
     registerDebugConfigurationProvider(debugType: string, provider: theia.DebugConfigurationProvider): Disposable {
-        this.configurationProviders.set(debugType, provider);
-        return Disposable.create(() => this.configurationProviders.delete(debugType));
+        const providers = this.configurationProviders.get(debugType) || new Set<theia.DebugConfigurationProvider>();
+        this.configurationProviders.set(debugType, providers);
+        providers.add(provider);
+
+        return Disposable.create(() => {
+            // tslint:disable-next-line:no-shadowed-variable
+            const providers = this.configurationProviders.get(debugType);
+            if (providers) {
+                providers.delete(provider);
+                if (providers.size === 0) {
+                    this.configurationProviders.delete(debugType);
+                }
+            }
+        });
     }
 
     async $onSessionCustomEvent(sessionId: string, event: string, body?: any): Promise<void> {
@@ -206,22 +218,34 @@ export class DebugExtImpl implements DebugExt {
         return contribution && contribution.configurationSnippets || [];
     }
 
-    async $provideDebugConfigurations(debugType: string, folder: string | undefined): Promise<theia.DebugConfiguration[]> {
-        const provider = this.configurationProviders.get(debugType);
-        if (provider && provider.provideDebugConfigurations) {
-            const workspaceFolder = folder && this.toWorkspaceFolder(folder) || undefined;
-            return await provider.provideDebugConfigurations(workspaceFolder) || [];
+    async $provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<theia.DebugConfiguration[]> {
+        let result: theia.DebugConfiguration[] = [];
+
+        const providers = this.configurationProviders.get(debugType);
+        if (providers) {
+            for (const provider of providers) {
+                if (provider.provideDebugConfigurations) {
+                    result = result.concat(await provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri)) || []);
+                }
+            }
         }
 
-        return [];
+        return result;
     }
 
-    async $resolveDebugConfigurations(debugType: string, debugConfiguration: theia.DebugConfiguration, folder: string | undefined): Promise<theia.DebugConfiguration | undefined> {
-        const provider = this.configurationProviders.get(debugType);
-        if (provider && provider.resolveDebugConfiguration) {
-            const workspaceFolder = folder && this.toWorkspaceFolder(folder) || undefined;
-            return provider.resolveDebugConfiguration(workspaceFolder, debugConfiguration);
+    async $resolveDebugConfigurations(debugConfiguration: theia.DebugConfiguration, workspaceFolderUri: string | undefined): Promise<theia.DebugConfiguration | undefined> {
+        let resolved = debugConfiguration;
+
+        const providers = this.configurationProviders.get(debugConfiguration.type);
+        if (providers) {
+            for (const provider of providers) {
+                if (provider.resolveDebugConfiguration) {
+                    resolved = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), debugConfiguration) || resolved;
+                }
+            }
         }
+
+        return resolved;
     }
 
     private async getExecutable(debugConfiguration: theia.DebugConfiguration): Promise<DebugAdapterExecutable> {
@@ -237,7 +261,11 @@ export class DebugExtImpl implements DebugExt {
         throw new Error(`It is not possible to provide debug adapter executable for '${debugConfiguration.type}'.`);
     }
 
-    private toWorkspaceFolder(folder: string): theia.WorkspaceFolder {
+    private toWorkspaceFolder(folder: string | undefined): theia.WorkspaceFolder | undefined {
+        if (!folder) {
+            return undefined;
+        }
+
         const uri = URI.parse(folder);
         const path = new Path(uri.path);
         return {
