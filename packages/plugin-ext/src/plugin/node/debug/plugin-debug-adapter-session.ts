@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import * as theia from '@theia/plugin';
-import { CommunicationProvider } from '@theia/debug/lib/node/debug-model';
+import { CommunicationProvider } from '@theia/debug/lib/common/debug-model';
 import { DebugAdapterSessionImpl } from '@theia/debug/lib/node/debug-adapter-session';
 import { DebugProtocol } from 'vscode-debugprotocol';
 

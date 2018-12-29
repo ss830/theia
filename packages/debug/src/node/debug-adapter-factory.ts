@@ -36,7 +36,7 @@ import {
     DebugAdapterSession,
     DebugAdapterSessionFactory,
     DebugAdapterFactory
-} from './debug-model';
+} from '../common/debug-model';
 import { DebugAdapterSessionImpl } from './debug-adapter-session';
 
 /**
