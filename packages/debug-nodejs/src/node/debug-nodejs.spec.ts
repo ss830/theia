@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (C) 2018 TypeFox and others.
+ * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,15 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ContainerModule } from 'inversify';
-import { JavaExtensionContribution } from '@theia/java/lib/node';
-import { JavaDebugAdapterContribution, JavaDebugExtensionContribution } from './java-debug-adapter-contribution';
-import { DebugAdapterContribution } from '@theia/debug/lib/node/debug-model';
+describe('node-debug package', () => {
 
-export default new ContainerModule(bind => {
-    /* explcit inTransientScope because it is very important, that
-       each web socket connection gets its own instance,
-       since it is using frontend services via this connection */
-    bind(DebugAdapterContribution).to(JavaDebugAdapterContribution).inTransientScope();
-    bind(JavaExtensionContribution).to(JavaDebugExtensionContribution).inSingletonScope();
+    it('support code coverage statistics', () => true);
 });

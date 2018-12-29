@@ -18,13 +18,12 @@ import { DebugExt, } from '../../../api/plugin-api';
 import { DebugConfiguration } from '@theia/debug/lib/common/debug-configuration';
 import { IJSONSchemaSnippet, IJSONSchema } from '@theia/core/lib/common/json-schema';
 import { MaybePromise } from '@theia/core/lib/common/types';
-import { DebugAdapterContribution } from '@theia/debug/lib/common/debug-model';
 import { DebuggerDescription } from '@theia/debug/lib/common/debug-service';
 
 /**
  * Plugin [DebugAdapterContribution](#DebugAdapterContribution).
  */
-export class PluginDebugAdapterContribution implements DebugAdapterContribution {
+export class PluginDebugAdapterContribution {
     constructor(
         protected readonly description: DebuggerDescription,
         protected readonly debugExt: DebugExt) { }

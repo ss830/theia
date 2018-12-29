@@ -28,7 +28,7 @@ import { ConnectionExtImpl } from '../../connection-ext';
 import { CommandRegistryImpl } from '../../command-registry';
 import { DebuggerContribution } from '../../../common';
 import { PluginWebSocketChannel } from '../../../common/connection';
-import { DebugAdapterExecutable } from '@theia/debug/lib/common/debug-model';
+import { DebugAdapterExecutable } from '@theia/debug/lib/node/debug-model';
 import { IJSONSchema, IJSONSchemaSnippet } from '@theia/core/lib/common/json-schema';
 import { PluginDebugAdapterSession } from './plugin-debug-adapter-session';
 import { startDebugAdapter } from './plugin-debug-adapter-starter';

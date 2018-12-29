@@ -17,7 +17,7 @@
 import * as path from 'path';
 import { PlatformSpecificAdapterContribution, DebuggerContribution } from '../../../common';
 import { isWindows, isOSX } from '@theia/core/lib/common/os';
-import { DebugAdapterExecutable } from '@theia/debug/lib/common/debug-model';
+import { DebugAdapterExecutable } from '@theia/debug/lib/node/debug-model';
 
 /**
  * Resolves [DebugAdapterExecutable](#DebugAdapterExecutable) based on contribution.

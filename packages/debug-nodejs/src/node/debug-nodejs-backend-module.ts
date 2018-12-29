@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (C) 2018 TypeFox and others.
+ * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,14 +15,11 @@
  ********************************************************************************/
 
 import { ContainerModule } from 'inversify';
-import { JavaExtensionContribution } from '@theia/java/lib/node';
-import { JavaDebugAdapterContribution, JavaDebugExtensionContribution } from './java-debug-adapter-contribution';
-import { DebugAdapterContribution } from '@theia/debug/lib/node/debug-model';
 
 export default new ContainerModule(bind => {
-    /* explcit inTransientScope because it is very important, that
-       each web socket connection gets its own instance,
-       since it is using frontend services via this connection */
-    bind(DebugAdapterContribution).to(JavaDebugAdapterContribution).inTransientScope();
-    bind(JavaExtensionContribution).to(JavaDebugExtensionContribution).inSingletonScope();
+    // Node debug extensions are deprecated.
+    // It is possible to use vscode debug extension now.
+
+    // bind(DebugAdapterContribution).to(NodeDebugAdapterContribution).inSingletonScope();
+    // bind(DebugAdapterContribution).to(Node2DebugAdapterContribution).inSingletonScope();
 });
