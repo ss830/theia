@@ -47,9 +47,9 @@ export class CommandRegistryImpl implements CommandRegistryExt {
     }
 
     registerCommand(command: theia.Command, handler?: Handler): Disposable {
-        if (this.commands.has(command.id)) {
-            throw new Error(`Command ${command.id} already exist`);
-        }
+        // if (this.commands.has(command.id)) {
+        //     throw new Error(`Command ${command.id} already exist`);
+        // }
         if (handler) {
             this.commands.set(command.id, handler);
         }
@@ -63,9 +63,9 @@ export class CommandRegistryImpl implements CommandRegistryExt {
     }
 
     registerHandler(commandId: string, handler: Handler): Disposable {
-        if (this.commands.has(commandId)) {
-            throw new Error(`Command ${commandId} already has handler`);
-        }
+        // if (this.commands.has(commandId)) {
+        //     throw new Error(`Command ${commandId} already has handler`);
+        // }
         this.commands.set(commandId, handler);
         return Disposable.create(() => {
             this.commands.delete(commandId);
