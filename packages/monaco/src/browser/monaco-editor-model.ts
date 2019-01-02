@@ -24,6 +24,8 @@ export {
     TextDocumentSaveReason
 };
 
+export type WillSaveMonacoModelListener = (event: WillSaveMonacoModelEvent) => void;
+
 export interface WillSaveMonacoModelEvent {
     readonly model: MonacoEditorModel;
     readonly reason: TextDocumentSaveReason;
@@ -52,8 +54,10 @@ export class MonacoEditorModel implements ITextEditorModel, TextEditorDocument {
     protected readonly onDidSaveModelEmitter = new Emitter<monaco.editor.IModel>();
     readonly onDidSaveModel = this.onDidSaveModelEmitter.event;
 
-    protected readonly onWillSaveModelEmitter = new Emitter<WillSaveMonacoModelEvent>();
-    readonly onWillSaveModel = this.onWillSaveModelEmitter.event;
+    protected readonly onWillSaveModelListeners: WillSaveMonacoModelListener[] = [];
+    onWillSaveModel(listener: WillSaveMonacoModelListener) {
+        this.onWillSaveModelListeners.push(listener);
+    }
 
     constructor(
         protected readonly resource: Resource,
@@ -64,7 +68,7 @@ export class MonacoEditorModel implements ITextEditorModel, TextEditorDocument {
         this.toDispose.push(this.toDisposeOnAutoSave);
         this.toDispose.push(this.onDidChangeContentEmitter);
         this.toDispose.push(this.onDidSaveModelEmitter);
-        this.toDispose.push(this.onWillSaveModelEmitter);
+        this.toDispose.push(Disposable.create(() => this.onWillSaveModelListeners.length = 0));
         this.toDispose.push(this.onDirtyChangedEmitter);
         this.resolveModel = resource.readContents().then(content => this.initialize(content));
     }
@@ -333,28 +337,52 @@ export class MonacoEditorModel implements ITextEditorModel, TextEditorDocument {
     }
 
     protected async fireWillSaveModel(reason: TextDocumentSaveReason, token: CancellationToken): Promise<void> {
-        const waitables: Thenable<monaco.editor.IIdentifiedSingleEditOperation[]>[] = [];
+        type EditContributor = Thenable<monaco.editor.IIdentifiedSingleEditOperation[]>;
+        for (const listener of this.onWillSaveModelListeners) {
+            const waitables: EditContributor[] = [];
+            const { version } = this;
 
-        // The firing is synchronous.
-        // Every listener will register something for us to wait after.
-        this.onWillSaveModelEmitter.fire({
-            model: this, reason,
-            waitUntil: thenable => {
-                waitables.push(thenable);
+            const event = {
+                model: this, reason,
+                waitUntil: (thenable: EditContributor) => {
+                    if (Object.isFrozen(waitables)) {
+                        throw new Error('waitUntil cannot be called asynchronously.');
+                    }
+                    waitables.push(thenable);
+                }
+            };
+
+            try {
+                listener(event);
+            } catch (err) {
+                console.error(err);
+                continue;
             }
-        });
 
-        // Wait for all listeners to resolve the edits.
-        return Promise.all(waitables).then(allOperations => {
+            // Asynchronous calls to `waitUntil` should fail.
+            Object.freeze(waitables);
+
+            // Wait for all promises and apply edits.
+            const edits = await Promise.all(waitables).then(allOperations =>
+                ([] as monaco.editor.IIdentifiedSingleEditOperation[]).concat(...allOperations)
+            );
             if (token.isCancellationRequested) {
                 return;
             }
-            for (const operations of allOperations) {
-                this.applyEdits(operations, {
+
+            // Only apply edits if the document did not change.
+            if (version !== this.version) {
+                console.error('document was tempered with.');
+                continue;
+            }
+
+            // Finally apply edits provided by this listener before firing the next.
+            if (edits && edits.length > 0) {
+                this.applyEdits(edits, {
                     ignoreDirty: true,
                 });
             }
-        });
+        }
     }
 
     protected fireDidSaveModel(): void {
